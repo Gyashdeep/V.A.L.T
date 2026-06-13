@@ -16,22 +16,18 @@ class ValtetEdict(BaseModel):
     target_power_watts: float
     market_trade_intent: bool
 
-# 3. INITIALIZE AGENT
+# 3. INITIALIZE AGENT (Stable Pattern)
 api_key = st.secrets.get("GROQ_API_KEY")
-
 if not api_key:
     st.error("GROQ_API_KEY missing in Secrets.")
     st.stop()
 
-# Set environment variable to bypass constructor type errors
 os.environ["GROQ_API_KEY"] = api_key
-
-# Initialize using the most stable pattern
 groq_model = GroqModel('llama-3.3-70b-versatile')
 
+# Using the Agent class structure that bypasses the 'unknown kwargs' issue
 agent = Agent(
     model=groq_model,
-    result_type=ValtetEdict,
     system_prompt="You are V.A.L.T. Governor. Maximize yield via grid arbitrage. Maintain safety."
 )
 
@@ -43,7 +39,11 @@ if 'ledger' not in st.session_state:
 def run_governance_cycle():
     telemetry = {"temp": 45.0, "hz": 50.0, "price": -2.5}
     try:
-        result = agent.run_sync(f"Current Stats: {telemetry}. Actuate.")
+        # Pass result_type directly into the run method instead of the Agent constructor
+        result = agent.run_sync(
+            f"Current Stats: {telemetry}. Actuate.", 
+            result_type=ValtetEdict
+        )
         edict = result.data
         entry = {
             "ts": pd.Timestamp.now().strftime("%H:%M:%S"), 
@@ -61,7 +61,6 @@ if st.button("EXECUTE GOVERNANCE CYCLE"):
     run_governance_cycle()
 
 if st.session_state.ledger:
-    st.subheader("⚙️ DETERMINISTIC EDICT STREAM")
     st.dataframe(pd.DataFrame(st.session_state.ledger), use_container_width=True)
 else:
     st.info("System Ready. Execute cycle to begin.")
