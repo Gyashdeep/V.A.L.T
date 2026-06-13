@@ -16,16 +16,19 @@ class ValtetEdict(BaseModel):
     market_trade_intent: bool
 
 # 3. INITIALIZE AGENT
+# Ensure your Streamlit Cloud Settings > Secrets contains: GROQ_API_KEY = "gsk_..."
 api_key = st.secrets.get("GROQ_API_KEY")
 
 if not api_key:
-    st.error("GROQ_API_KEY missing. Please configure it in Streamlit Cloud Settings -> Secrets.")
+    st.error("GROQ_API_KEY missing in Secrets.")
     st.stop()
 
-# Initialize the model object explicitly
-groq_model = GroqModel('llama-3.3-70b-versatile', api_key=api_key)
+# Use explicit keyword arguments for the model
+groq_model = GroqModel(
+    model_name='llama-3.3-70b-versatile',
+    api_key=api_key
+)
 
-# Initialize the agent correctly
 agent = Agent(
     model=groq_model,
     result_type=ValtetEdict,
@@ -40,7 +43,7 @@ if 'ledger' not in st.session_state:
 def run_governance_cycle():
     telemetry = {"temp": 45.0, "hz": 50.0, "price": -2.5}
     try:
-        # Synchronous execution for cloud stability
+        # Use run_sync to execute the AI agent
         result = agent.run_sync(f"Current Stats: {telemetry}. Actuate.")
         edict = result.data
         entry = {
