@@ -2,30 +2,29 @@ import streamlit as st
 import pandas as pd
 import json
 
-st.set_page_config(page_title="V.A.L.T. TERMINAL", layout="wide")
-st.markdown("<style>.stApp { background-color: #000; color: #00FF41; font-family: monospace; }</style>", unsafe_allow_html=True)
+st.set_page_config(page_title="V.A.L.T. // GOVERNOR", layout="wide")
+st.markdown("<style>.stApp { background-color: #000000; color: #00FF41; font-family: 'Courier New', monospace; }</style>", unsafe_allow_html=True)
 
-st.title("💠 V.A.L.T. SOVEREIGN TERMINAL")
+st.title("💠 PHASE-LOCK ZERO // V.A.L.T. GOVERNOR")
+log_area = st.empty() # The container that prevents page flickering
 
-# Placeholder for dynamic content
-placeholder = st.empty()
-
-def get_data():
+def get_ledger():
     try:
         with open("audit_ledger.jsonl", "r") as f:
-            return pd.DataFrame([json.loads(line) for line in f.readlines()[-10:]])
+            lines = f.readlines()[-15:]
+            return pd.DataFrame([json.loads(line) for line in lines])
     except: return pd.DataFrame()
 
-# Polling loop managed by Streamlit
+# The UI Loop
 while True:
-    df = get_data()
-    with placeholder.container():
+    df = get_ledger()
+    with log_area.container():
+        st.subheader("⚙️ DETERMINISTIC EDICT STREAM")
         if not df.empty:
             st.dataframe(df, use_container_width=True)
         else:
-            st.write("SYSTEM INITIALIZING: WAITING FOR HEARTBEAT...")
+            st.warning("SYSTEM INITIALIZING: WAITING FOR TELEMETRY...")
     
-    # Use standard time delay for UI refresh
+    # Simple refresh without forcing a page reload
     import time
     time.sleep(2)
-    st.rerun()
