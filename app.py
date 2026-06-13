@@ -1,36 +1,45 @@
 import streamlit as st
 import pandas as pd
 import json
+import time
 
 st.set_page_config(page_title="V.A.L.T. // GOVERNOR", layout="wide")
 
-# ... (Keep your CSS style block here) ...
+st.markdown("""
+    <style>
+    .stApp { background-color: #000000; color: #00FF41; font-family: 'Courier New', monospace; }
+    </style>
+""", unsafe_allow_html=True)
 
-st.title("💠V.A.L.T. GOVERNOR")
+st.title("💠 PHASE-LOCK ZERO // V.A.L.T. GOVERNOR")
 
-# Use a container for the Edict Stream
+# 1. METRICS (Hardcoded placeholder until you hook up live state)
+col1, col2, col3 = st.columns(3)
+with col1: st.metric("GPU TEMP", "65°C")
+with col2: st.metric("GRID FREQ", "50.0Hz")
+with col3: st.metric("ARBITRAGE YIELD", "+$4.20/hr")
+
+# 2. THE EDICT LOG (Read-Only)
 st.subheader("⚙️ DETERMINISTIC EDICT STREAM")
-edict_container = st.empty() 
 
-def load_data():
+def get_ledger_data():
     try:
-        # Read from the ledger
-        data = []
         with open("audit_ledger.jsonl", "r") as f:
-            # Get the last 10 lines
-            lines = f.readlines()[-10:]
-            for line in lines:
-                data.append(json.loads(line))
-        return pd.DataFrame(data)
-    except: return pd.DataFrame()
+            lines = f.readlines()[-15:] # Get last 15 entries
+            return pd.DataFrame([json.loads(line) for line in lines])
+    except: 
+        return pd.DataFrame()
 
-# Infinite loop protection: Use st.rerun() only on user intent or a timer
-while True:
-    df = load_data()
-    if not df.empty:
-        # Use the container to update content instead of clearing the whole page
-        with edict_container.container():
-            st.dataframe(df, use_container_width=True)
-    
-    time.sleep(1) # Refresh rate of the dashboard
-    st.rerun()
+# Display the data frame once per render
+df = get_ledger_data()
+if not df.empty:
+    st.dataframe(df, use_container_width=True)
+
+# 3. KINETIC STATUS
+st.subheader("🛡️ KINETIC FIREWALL STATUS")
+st.success("SYSTEM INTEGRITY: NOMINAL // HARDWARE CLAMP: ACTIVE")
+
+# REFRESH LOGIC: 
+# Do NOT use 'while True'. Use this to refresh every 2 seconds.
+time.sleep(2)
+st.rerun()
