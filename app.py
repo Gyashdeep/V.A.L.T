@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_ai.models.groq import GroqModel
@@ -16,18 +17,17 @@ class ValtetEdict(BaseModel):
     market_trade_intent: bool
 
 # 3. INITIALIZE AGENT
-# Ensure your Streamlit Cloud Settings > Secrets contains: GROQ_API_KEY = "gsk_..."
 api_key = st.secrets.get("GROQ_API_KEY")
 
 if not api_key:
     st.error("GROQ_API_KEY missing in Secrets.")
     st.stop()
 
-# Use explicit keyword arguments for the model
-groq_model = GroqModel(
-    model_name='llama-3.3-70b-versatile',
-    api_key=api_key
-)
+# Set environment variable to bypass constructor type errors
+os.environ["GROQ_API_KEY"] = api_key
+
+# Initialize using the most stable pattern
+groq_model = GroqModel('llama-3.3-70b-versatile')
 
 agent = Agent(
     model=groq_model,
@@ -43,7 +43,6 @@ if 'ledger' not in st.session_state:
 def run_governance_cycle():
     telemetry = {"temp": 45.0, "hz": 50.0, "price": -2.5}
     try:
-        # Use run_sync to execute the AI agent
         result = agent.run_sync(f"Current Stats: {telemetry}. Actuate.")
         edict = result.data
         entry = {
