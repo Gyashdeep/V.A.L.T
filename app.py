@@ -1,45 +1,37 @@
 import streamlit as st
 import pandas as pd
 import json
-import time
 
-# Dashboard Configuration
 st.set_page_config(page_title="V.A.L.T. TERMINAL", layout="wide")
 
-# Industrial Aesthetic
-st.markdown("""
-    <style>
-    .stApp { background-color: #000; color: #00FF41; font-family: 'Courier New', monospace; }
-    </style>
-""", unsafe_allow_html=True)
+# Static CSS
+st.markdown("<style>.stApp { background-color: #000; color: #00FF41; }</style>", unsafe_allow_html=True)
 
 st.title("💠 V.A.L.T. SOVEREIGN TERMINAL")
 
-# 1. LIVE DATA FEEDER
 def get_ledger_data():
     try:
+        # Atomic read: open and close immediately
         with open("audit_ledger.jsonl", "r") as f:
-            # Load last 15 lines for the display
-            lines = f.readlines()[-15:]
-            data = [json.loads(line) for line in lines]
+            lines = f.readlines()
+            # Get last 15 lines safely
+            data = [json.loads(line) for line in lines[-15:]]
             return pd.DataFrame(data)
-    except: 
+    except:
         return pd.DataFrame()
 
-# 2. UI RENDER CYCLE
+# UI Layout
 st.subheader("⚙️ DETERMINISTIC EDICT STREAM")
 
+# Display data once per render
 df = get_ledger_data()
 if not df.empty:
     st.dataframe(df, use_container_width=True)
 else:
-    st.warning("SYSTEM STANDBY: Waiting for first sovereign edict...")
+    st.info("Waiting for Governor output...")
 
-# 3. KINETIC STATUS
-st.subheader("🛡️ KINETIC FIREWALL STATUS")
-st.success("HARDWARE CLAMP: ACTIVE // INTEGRITY: NOMINAL")
-
-# 4. REFRESH HEARTBEAT
-# This replaces the 'while True' loop and prevents browser hanging.
-time.sleep(2)
-st.rerun()
+# MANUAL REFRESH BUTTON
+# This replaces time.sleep() and st.rerun() to stop the "infinite" feel.
+# The user clicks this to see the latest data.
+if st.button("REFRESH DATA"):
+    st.rerun()
