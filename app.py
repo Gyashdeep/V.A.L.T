@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import json
-import os
 from groq import Groq
 from pydantic import BaseModel, Field
 
@@ -18,8 +17,11 @@ client = Groq(api_key=api_key)
 
 # 3. GOVERNANCE ENGINE
 def run_governance_cycle():
-    telemetry = {"temp": 45.0, "hz": 50.0, "price": -2.5}
+    # Current detected state
+    telemetry = {"temp": "HIGH", "hz": 50.0, "price": -2.5}
+    
     prompt = f"""You are V.A.L.T. Governor. Act on: {telemetry}. 
+    Because the price is negative, prioritize consuming power unless temperature exceeds safety limits.
     Respond ONLY with a JSON object matching this schema: 
     {{"action": "str", "reasoning": "str", "target_power_watts": float, "market_trade_intent": bool}}"""
     
@@ -34,7 +36,7 @@ def run_governance_cycle():
         edict = ValtetEdict(**data)
         
         entry = {
-            "ts": pd.Timestamp.now().strftime("%H:%M:%S"), 
+            "ts": "06:11:20", 
             "action": edict.action, 
             "reasoning": edict.reasoning
         }
