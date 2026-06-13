@@ -1,0 +1,13 @@
+# Python environment
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Sovereign Data (Local only)
+audit_ledger.jsonl
+sovereign_governor.log
+
+# Security
+.streamlit/secrets.toml
+*.key
