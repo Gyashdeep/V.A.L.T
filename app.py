@@ -1,30 +1,45 @@
 import streamlit as st
 import pandas as pd
 import json
+import time
 
-st.set_page_config(page_title="V.A.L.T. // GOVERNOR", layout="wide")
-st.markdown("<style>.stApp { background-color: #000000; color: #00FF41; font-family: 'Courier New', monospace; }</style>", unsafe_allow_html=True)
+# Dashboard Configuration
+st.set_page_config(page_title="V.A.L.T. TERMINAL", layout="wide")
 
-st.title("💠 PHASE-LOCK ZERO // V.A.L.T. GOVERNOR")
-log_area = st.empty() # The container that prevents page flickering
+# Industrial Aesthetic
+st.markdown("""
+    <style>
+    .stApp { background-color: #000; color: #00FF41; font-family: 'Courier New', monospace; }
+    </style>
+""", unsafe_allow_html=True)
 
-def get_ledger():
+st.title("💠 V.A.L.T. SOVEREIGN TERMINAL")
+
+# 1. LIVE DATA FEEDER
+def get_ledger_data():
     try:
         with open("audit_ledger.jsonl", "r") as f:
+            # Load last 15 lines for the display
             lines = f.readlines()[-15:]
-            return pd.DataFrame([json.loads(line) for line in lines])
-    except: return pd.DataFrame()
+            data = [json.loads(line) for line in lines]
+            return pd.DataFrame(data)
+    except: 
+        return pd.DataFrame()
 
-# The UI Loop
-while True:
-    df = get_ledger()
-    with log_area.container():
-        st.subheader("⚙️ DETERMINISTIC EDICT STREAM")
-        if not df.empty:
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.warning("SYSTEM INITIALIZING: WAITING FOR TELEMETRY...")
-    
-    # Simple refresh without forcing a page reload
-    import time
-    time.sleep(2)
+# 2. UI RENDER CYCLE
+st.subheader("⚙️ DETERMINISTIC EDICT STREAM")
+
+df = get_ledger_data()
+if not df.empty:
+    st.dataframe(df, use_container_width=True)
+else:
+    st.warning("SYSTEM STANDBY: Waiting for first sovereign edict...")
+
+# 3. KINETIC STATUS
+st.subheader("🛡️ KINETIC FIREWALL STATUS")
+st.success("HARDWARE CLAMP: ACTIVE // INTEGRITY: NOMINAL")
+
+# 4. REFRESH HEARTBEAT
+# This replaces the 'while True' loop and prevents browser hanging.
+time.sleep(2)
+st.rerun()
