@@ -12,8 +12,7 @@ class ValtetEdict(BaseModel):
     target_power_watts: float
     market_trade_intent: bool
 
-# 2. SETUP AGENT WITH TYPE HINTING
-# The result_type is now set here via the generic type hint
+# 2. SETUP AGENT
 api_key = st.secrets.get("GROQ_API_KEY")
 os.environ["GROQ_API_KEY"] = api_key
 
@@ -26,9 +25,12 @@ agent: Agent[None, ValtetEdict] = Agent(
 def run_governance_cycle():
     telemetry = {"temp": 45.0, "hz": 50.0, "price": -2.5}
     try:
-        # No result_type here; it is inferred from the agent definition above
         result = agent.run_sync(f"Current Stats: {telemetry}. Actuate.")
-        edict = result.data
+        
+        # FIX: Check if .data exists, otherwise use the result object directly
+        # Some versions return the model object itself directly
+        edict = getattr(result, 'data', result)
+        
         entry = {
             "ts": pd.Timestamp.now().strftime("%H:%M:%S"), 
             "action": edict.action, 
@@ -36,9 +38,11 @@ def run_governance_cycle():
         }
         st.session_state.ledger.append(entry)
     except Exception as e:
+        # Debugging: show exactly what the result object looks like if it fails
         st.error(f"Governor Fault: {str(e)}")
+        st.write("Result object:", result)
 
-# 4. UI (Simplified)
+# 4. UI
 st.title("💠 V.A.L.T. SOVEREIGN TERMINAL")
 if 'ledger' not in st.session_state: st.session_state.ledger = []
 
