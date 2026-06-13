@@ -1,0 +1,7 @@
+pydantic==2.8.2
+pydantic-ai==0.0.1
+groq==0.9.0
+nvidia-ml-py==12.555.43
+streamlit==1.36.0
+pandas==2.2.2
+asyncio==3.4.3
